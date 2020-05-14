@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <!-- combine Link1 and Link2-->
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marmot Results</title>
+
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.0.0/jquery.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha384-aJ21OjlMXNL5UyIl/XNwTMqvzeRMZH2w8c5cRVpzpU8Y5bApTppSuUkhZXN0VxHd" crossorigin="anonymous"></script>
+    <script type="text/javascript" src="https://unpkg.com/tabulator-tables@4.5.3/dist/js/tabulator.min.js"></script>
+    <script type="text/javascript" src="https://oss.sheetjs.com/sheetjs/xlsx.full.min.js"></script>    
+
+    <link href="https://unpkg.com/tabulator-tables@4.1.4/dist/css/tabulator.min.css" rel="stylesheet">
+    <!--<link href="https://cdnjs.cloudflare.com/ajax/libs/tabulator/4.4.0/css/semantic-ui/tabulator_semantic-ui.min.css" rel="stylesheet">-->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha384-HSMxcRTRxnN+Bdg0JdbxYKrThecOKuH5zCYotlSAcp1+c8xmyTe9GYg1l9a69psu" crossorigin="anonymous">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #f0f0f0;
+            padding-left: 80px;
+            padding-right: 80px;
+        }
+
+        /* Create three equal columns that floats next to each other */
+        .column {
+            float: left;
+            width: 33.33%;
+            padding: 10px;
+            height: 300px;
+            border-radius: 25px;
+            border: 2px solid #f0f0f0;
+            background-color:#fff
+        }
+
+        .btn {
+            font-size: 18px;
+        }
+
+        .tbl-link {
+            border: none;
+            color: white;
+            padding: 5px 5px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            border-radius: 5px;
+        }
+        .link1 {
+            background-color: #00a8cc;
+        }
+
+        .link2 {
+            background-color: #27496d;
+        }
+
+    </style>
+</head>
+<body>   
+    <nav class="navbar navbar-default" style="background-color: #0f4c75;">
+        <div class="container-fluid">
+          <div>
+            <a class="navbar-brand" id="ResultsText" style="padding-left: 10px; color:#fff">Marmot Results</a>
+          </div>
+        </div>
+    </nav> 
+    <div class="row">
+        <ul class="list-inline"> 
+            <li><a class="btn btn-primary" role="button" id="howbutton">How Marmot works<i class="material-icons">info</i></a></li>
+            <li><a class="btn btn-info" role="button" id="wherebutton">Where is This Report Saved<i class="material-icons">info</i></a></li>
+        </ul>
+    </div>
+
+    <h2 class="header">Scraping Summary</h2>
+
+    <div class="row">
+    <div class="column">
+        <canvas id="topNamesChart"></canvas>
+    </div>
+    <div class="column">
+    <canvas id="articleTopicsChart"></canvas>
+    </div>
+    <div class="column">
+        <h3>Word Count</h3>
+        <div class="card card-widget">
+            <h1 id="WordCount">Words read: </h1>
+        </div>
+        <h1 id="AuthorsCount">Authors Found: </h1>
+        <h1 id="NamesCount">All Names Found: </h1>
+    </div>
+    </div>
+
+    <h2 class="header">Results Table 
+        <a class="btn btn-primary" id="download-xlsx">Download to Excel <i class="material-icons">cloud_download</i></a>
+        <a class="btn btn-primary SendEmail" id="feedback">Submit Feedback <i class="material-icons">email</i></a>
+    </h2>
+    <div class="table-controls">
+        <div id="tabulator_table">
+        </div>
+    </div>
+</body>    
+<script>
+    var data = [articleData]
+
+var table = new Tabulator("#tabulator_table", { //http://tabulator.info/
+ 	height:500, // set height of table (in CSS or here), this enables the Virtual DOM and improves render speed dramatically (can be any valid css height value)
+ 	data:data, //assign data to table
+    layout:"fitColumns",      //fit columns to width of table
+	responsiveLayout:"hide",  //hide columns that dont fit on the table
+	tooltips:true,            //show tool tips on cells
+	addRowPos:"bottom",          //when adding a new row, add it to the top of the table
+	history:true,             //allow undo and redo actions on the table
+	pagination:"local",       //paginate the data
+	paginationSize:20,         //allow 7 rows per page of data
+	movableColumns:true,      //allow column order to be changed
+	resizableRows:true,       //allow row order to be changed
+	initialSort:[             //set the initial sort order of the data
+		{column:"id", dir:"desc"},
+	],
+ 	columns:[ //Define Table Columns
+	 	{title:"Authors Found", field:"author", width:160, editor:true, formatter:"textarea"}, // use attribute width.
+	 	{title:"Year", field:"year", align:"left", width:80, editor:true, formatter:"textarea"}, // formatter:"progress"},
+	 	{title:"Website", field:"site", width:160, editor:true, formatter:"textarea"},
+	 	{title:"Title", field:"title", editor:true, formatter:"textarea"},// sorter:"date", align:"center"},
+        {title:"Summary", field:"summary", editor:true, formatter:"textarea"},        
+        {title:"Links", width:120, formatter:function(cell) {
+            var data = cell.getData();
+            var output = '';
+            if (data.link1) {
+                output = '<a class="tbl-link link1" style="width:50px," href="' + data.link1 + '">Link</a>'
+            };
+            if (data.link2) {
+                if (output.length > 0) {
+                    output = output + " " + '<a class="tbl-link link2" href="' + data.link2 + '">Link</a>'
+                } else {
+                    output = '<a class="tbl-link link2" href="' + data.link2 + '">Link</a>'
+                }
+                
+            }
+            return output
+            }
+        },
+        {title:"Author Organization", field:"authorg", width:200, editor:true},
+        {title:"Words", field:"words", width:100, editor:true, formatter:"textarea"},
+        {title:"Text Near Selector", field:"neartext", editor:true, formatter:"textarea"},
+ 	]/*,
+ 	rowClick:function(e, row){ //trigger an alert message when the row is clicked
+ 		alert("Row " + row.getData().id + " Clicked!!!!");
+ 	},*/
+});
+
+//trigger download of data.xlsx file
+$("#download-xlsx").click(function(){
+    table.download("xlsx", "data.xlsx", {sheetName:"My Data"});
+});
+
+$("#feedback")[0].title = 'Use this button to email the Marmot team if you have feedback'
+$('.SendEmail').click(function (event) {
+        var email = 'marmot@hq.dhs.gov';
+        var subject = 'Feedback regarding search ' + searchTerm;
+        var emailBody = 'Please provide the following information';
+        //var attach = window.location.href;
+        //var attach = (window.location.pathname).substring(1);
+        //var attach = 'C:\Users\phhawkins\Documents\Corporate\GSS\report\stats.json'
+        document.location = "mailto:"+email+"?subject="+subject+"&body="+emailBody;//+"&attach="+attach;
+      });
+
+
+var stats = [metrics]
+
+var topNames = stats.topNames;
+var articleTopics = stats.articleTopics;
+var searchTerm = stats.searchTerm;
+
+// format the search result count to have comma separation if needed
+// https://stackoverflow.com/questions/2901102/how-to-print-a-number-with-commas-as-thousands-separators-in-javascript
+function numberWithCommas(x) {
+    return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+};
+
+// populate Title Bar with count of results
+var resultCount_raw = stats.resultCount;
+if (resultCount_raw > 100) {
+    var resultCount = numberWithCommas(stats.resultCount);
+    $("#ResultsText")[0].text = $("#ResultsText")[0].text + ' for "' + searchTerm + '" (' + resultCount + ' results. Only first 100 were read.)'
+} else {
+    var resultCount = numberWithCommas(stats.resultCount);
+    $("#ResultsText")[0].text = $("#ResultsText")[0].text + ' for "' + searchTerm + '" (' + resultCount + ' results)'
+};
+
+// populate Word Counter callout box
+$("#WordCount")[0].textContent = $("#WordCount")[0].textContent + numberWithCommas(stats.totalWords);
+$("#AuthorsCount")[0].textContent = $("#AuthorsCount")[0].textContent + numberWithCommas(stats.totalAuth);
+$("#NamesCount")[0].textContent = $("#NamesCount")[0].textContent + numberWithCommas(stats.totalNames);
+
+// topNames Chart
+var ctx_topNames = $("#topNamesChart");
+var ctx_topNamesChart = new Chart(ctx_topNames, {
+    type: 'bar',
+    data: {
+        labels : Object.keys(topNames),
+        
+        datasets : [{
+            backgroundColor: "#3e95cd",    
+            label : "Name Occurrence",
+            data : Object.values(topNames)
+        }]
+    }
+});
+// articleTopicsChart Chart
+var ctx_articleTopics = $("#articleTopicsChart");
+var ctx_articleTopicsChart = new Chart(ctx_articleTopics, {
+    type: 'horizontalBar',
+    data: {
+        labels : Object.keys(articleTopics),
+        datasets : [{
+            backgroundColor: "#bbe1fa",
+            label : "Topic Occurrence",
+            data : Object.values(articleTopics)
+        }]
+    }
+});
+
+var how_button_tooltip_txt = `Marmot queries Google Scholar for the search term you entered.
+If more than 100 search results are found, only the first 100 are read.
+This allows the app to prevent being rejected by Google.
+
+Next, the program uses AI to identify authors, organizations, and other relevant data.
+
+This report contains summary statistics of the data and the output of what the AI found.
+Read the AI's findings below. You can visit any link that the program recorded.
+
+You can close and re-open this report at any time. It's saved on your computer.
+`
+$("#howbutton")[0].title = $("#howbutton")[0].title + how_button_tooltip_txt;
+
+var savelocation = [outPath];
+$("#wherebutton")[0].title = $("#wherebutton")[0].title + savelocation
+</script>
+</html>
