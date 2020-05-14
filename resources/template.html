@@ -150,12 +150,8 @@ var table = new Tabulator("#tabulator_table", { //http://tabulator.info/
             }
         },
         {title:"Author Organization", field:"authorg", width:200, editor:true},
-        {title:"Words", field:"words", width:100, editor:true, formatter:"textarea"},
-        {title:"Text Near Selector", field:"neartext", editor:true, formatter:"textarea"},
- 	]/*,
- 	rowClick:function(e, row){ //trigger an alert message when the row is clicked
- 		alert("Row " + row.getData().id + " Clicked!!!!");
- 	},*/
+        {title:"Words", field:"words", width:100, editor:true, formatter:"textarea"}
+ 	]
 });
 
 //trigger download of data.xlsx file
